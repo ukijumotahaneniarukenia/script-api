@@ -1,75 +1,67 @@
 package payroll;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
+@Controller
+@RequestMapping(path="/api")
 class EmployeeController {
 
-	private final EmployeeRepository repository;
+	@Autowired
+	private EmployeeRepository repository;
 
-	EmployeeController(EmployeeRepository repository) {
-		this.repository = repository;
-	}
-
-	@GetMapping("/employees")
-	CollectionModel<EntityModel<Employee>> selectAllEmployee() {
-
-		List<EntityModel<Employee>> employees = repository.findAll().stream()
-				.map(employee -> EntityModel.of(employee,
-						linkTo(methodOn(EmployeeController.class).selectEmployee(employee.getId())).withSelfRel(),
-						linkTo(methodOn(EmployeeController.class).selectAllEmployee()).withRel("employees")))
-				.collect(Collectors.toList());
-
-		return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).selectAllEmployee()).withSelfRel());
+	@GetMapping(path="/all")
+	public @ResponseBody Iterable<Employee> selectAllEmployees(){
+		return repository.findAll();
 	}
 
 	@GetMapping("/employees/{id}")
-	EntityModel<Employee> selectEmployee(@PathVariable Long id) {
+	public ResponseEntity<Employee> selectEmployeeById (@PathVariable Long id) {
 
-		Employee employee = repository.findById(id)
-				.orElseThrow(() -> new EmployeeNotFoundException(id));
+		Optional<Employee> tobeSelectEmployee = repository.findById(id);
 
-		return EntityModel.of(employee,
-				linkTo(methodOn(EmployeeController.class).selectEmployee(id)).withSelfRel(),
-				linkTo(methodOn(EmployeeController.class).selectAllEmployee()).withRel("employees"));
+		if(tobeSelectEmployee.isPresent()){
+			return new ResponseEntity<>(tobeSelectEmployee.get(),HttpStatus.OK);
+		}else{
+			return new ResponseEntity<>(tobeSelectEmployee.orElse(null), HttpStatus.NOT_FOUND);
+		}
+
 	}
 
-	@PostMapping("/employees")
-	Employee createEmployee(@RequestBody Employee newEmployee) {
-		return repository.save(newEmployee);
+	@PostMapping("/add")
+	public ResponseEntity<Employee> createEmployee(@RequestBody Employee tobeCreateEmployee){
+
+		repository.save(tobeCreateEmployee);
+
+		return new ResponseEntity<>(tobeCreateEmployee, HttpStatus.OK);
 	}
 
 
 	@PutMapping("/employees/{id}")
-	Employee updateEmployee(@RequestBody Employee newEmployee, @PathVariable Long id) {
+	public ResponseEntity<Employee> updateEmployee(@RequestBody Employee newEmployee, @PathVariable Long id) throws EmployeeNotFoundException{
 
-		return repository.findById(id)
-				.map(employee -> {
-					employee.setName(newEmployee.getName());
-					employee.setRole(newEmployee.getRole());
-					return repository.save(employee);
-				})
-				.orElseGet(() -> {
-					newEmployee.setId(id);
-					return repository.save(newEmployee);
-				});
+		Employee employee = repository.findById(id).orElseThrow(()->new EmployeeNotFoundException(id));
+
+		employee.setName(newEmployee.getName());
+		employee.setRole(newEmployee.getRole());
+
+		Employee updatedEmployee = repository.save(employee);
+
+		return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/employees/{id}")
-	void deleteEmployee(@PathVariable Long id) {
-		repository.deleteById(id);
+	public ResponseEntity<Employee> deleteEmployee(@PathVariable Long id) throws EmployeeNotFoundException{
+
+		Employee tobeDeleteEmployee = repository.findById(id).orElseThrow(()->new EmployeeNotFoundException(id));
+
+		repository.delete(tobeDeleteEmployee);
+
+		return new ResponseEntity<>(tobeDeleteEmployee,HttpStatus.OK);
 	}
 }
