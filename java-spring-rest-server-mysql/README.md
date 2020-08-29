@@ -185,7 +185,7 @@ dockerホストからアクセスする際のURL
 - http://172.17.0.2:8080/api/all
 
 
-dockerコンテナからアクセスする際のURL
+dockerコンテナからアクセスする際のURL(dockerコンテナにfirefoxなどのブラウザをインストールしておく)
 
 - http://localhost:8080/api/all
 
@@ -193,5 +193,18 @@ dockerコンテナからアクセスする際のURL
 ポータブルな単一実行可能なjarファイルの作成
 
 ```
+pom.xmlファイルが存在するディレクトリに移動
+$ cd /home/aine/script-api/java-spring-rest-server-mysql/payroll
 
+ライフサイクルのパッケージをダブルクリックでも作成可能
+$ ./mvnw package
+
+実行ディレクトリにコピー
+$ cp /home/aine/script-api/java-spring-rest-server-mysql/payroll/target/payroll-0.0.1-SNAPSHOT.jar /home/aine/
+
+実行ディレクトリに移動
+$ cd /home/aine
+
+実行
+$ java -jar payroll-0.0.1-SNAPSHOT.jar
 ```
