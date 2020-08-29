@@ -14,211 +14,86 @@ java    26744 aine   75u  IPv6 231214      0t0  TCP *:8080 (LISTEN)
 api確認
 
 ```
-$ curl -X GET -s http://localhost:8080/employees | jq
-{
-  "_embedded": {
-    "employeeList": [
-      {
-        "id": 1,
-        "name": "Bilbo Baggins",
-        "role": "burglar",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/1"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      },
-      {
-        "id": 2,
-        "name": "Frodo Baggins",
-        "role": "thief",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/2"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      }
-    ]
-  },
-  "_links": {
-    "self": {
-      "href": "http://localhost:8080/employees"
-    }
-  }
-}
-```
+GET
 
+$ curl -X GET -s http://localhost:8080/api/all | jq
+[
+  {
+    "id": 1,
+    "name": "Bilbo Baggins",
+    "role": "burglar"
+  },
+  {
+    "id": 2,
+    "name": "Frodo Baggins",
+    "role": "thief"
+  }
+]
 
 POST
 
-```
-$ curl -X POST -H 'Content-Type:application/json' -s http://localhost:8080/employees -d '{"id":3,"name":"まりこ","role":"Chef"}'
+$ curl -X POST -H 'Content-Type:application/json' localhost:8080/api/add -d'{"name":"まりこ","role":"Chef"}'
 {"id":3,"name":"まりこ","role":"Chef"}
-
-$ curl -X GET -s http://localhost:8080/employees | jq
-{
-  "_embedded": {
-    "employeeList": [
-      {
-        "id": 1,
-        "name": "Bilbo Baggins",
-        "role": "burglar",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/1"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      },
-      {
-        "id": 2,
-        "name": "Frodo Baggins",
-        "role": "thief",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/2"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      },
-      {
-        "id": 3,
-        "name": "まりこ",
-        "role": "Chef",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/3"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      }
-    ]
+$ curl -X GET -s http://localhost:8080/api/all | jq
+[
+  {
+    "id": 1,
+    "name": "Bilbo Baggins",
+    "role": "burglar"
   },
-  "_links": {
-    "self": {
-      "href": "http://localhost:8080/employees"
-    }
+  {
+    "id": 2,
+    "name": "Frodo Baggins",
+    "role": "thief"
+  },
+  {
+    "id": 3,
+    "name": "まりこ",
+    "role": "Chef"
   }
+]
+
+NOTHING
+
+$ curl -X GET -H 'Content-Type:application/json' -s localhost:8080/api/employees/5 | jq
+
+
+GET
+
+$ curl -X GET -H 'Content-Type:application/json' -s localhost:8080/api/employees/2 | jq
+{
+  "id": 2,
+  "name": "Frodo Baggins",
+  "role": "thief"
 }
 
-```
+GET
 
-
-PUT
-
-```
-$ curl -X PUT -H 'Content-Type:application/json' -s http://localhost:8080/employees/3 -d '{"name":"ぽるこ","role":"ぶた"}'
-{"id":3,"name":"ぽるこ","role":"ぶた"}
-
-$ curl -X GET -s http://localhost:8080/employees | jq
+$ curl -X GET -H 'Content-Type:application/json' -s localhost:8080/api/employees/3 | jq
 {
-  "_embedded": {
-    "employeeList": [
-      {
-        "id": 1,
-        "name": "Bilbo Baggins",
-        "role": "burglar",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/1"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      },
-      {
-        "id": 2,
-        "name": "Frodo Baggins",
-        "role": "thief",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/2"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      },
-      {
-        "id": 3,
-        "name": "ぽるこ",
-        "role": "ぶた",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/3"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      }
-    ]
-  },
-  "_links": {
-    "self": {
-      "href": "http://localhost:8080/employees"
-    }
-  }
+  "id": 3,
+  "name": "まりこ",
+  "role": "Chef"
 }
-```
+
+
+POST
+$ curl -X PUT -H 'Content-Type:application/json' -s localhost:8080/api/employees/2 -d '{"name":"ぽるこ","role":"ぶた"}'
+{"id":2,"name":"ぽるこ","role":"ぶた"}
+
+$ curl -X GET -H 'Content-Type:application/json' -s localhost:8080/api/employees/2 | jq
+{
+  "id": 2,
+  "name": "ぽるこ",
+  "role": "ぶた"
+}
 
 
 DELETE
 
-```
-$ curl -X DELETE -H 'Content-Type:application/json' -s http://localhost:8080/employees/3
-
-$ curl -X GET -s http://localhost:8080/employees | jq
-{
-  "_embedded": {
-    "employeeList": [
-      {
-        "id": 1,
-        "name": "Bilbo Baggins",
-        "role": "burglar",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/1"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      },
-      {
-        "id": 2,
-        "name": "Frodo Baggins",
-        "role": "thief",
-        "_links": {
-          "self": {
-            "href": "http://localhost:8080/employees/2"
-          },
-          "employees": {
-            "href": "http://localhost:8080/employees"
-          }
-        }
-      }
-    ]
-  },
-  "_links": {
-    "self": {
-      "href": "http://localhost:8080/employees"
-    }
-  }
-}
+$ curl -X DELETE -H 'Content-Type:application/json' -s localhost:8080/api/employees/2
+{"id":2,"name":"ぽるこ","role":"ぶた"}
+$ curl -X GET -H 'Content-Type:application/json' -s localhost:8080/api/employees/2 | jq
 ```
 
 ポータブルな単一実行可能なjarファイルの作成
