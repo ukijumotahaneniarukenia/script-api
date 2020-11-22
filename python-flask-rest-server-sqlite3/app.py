@@ -251,6 +251,8 @@ def upload_my_bookmark():
       print(traceback.format_exc())
       return Response(headers=response_header, response=json.dumps(result), status=500)
 
+# POSTならファイル名をハンドリングしやすそう
+# https://www.air-h.jp/articles/emopro/ajax%E3%81%A7%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E9%80%81%E4%BF%A1%E3%81%97%E3%81%9F%E3%81%84%EF%BC%88xhr-jquery-axios-fetch%EF%BC%89/
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
