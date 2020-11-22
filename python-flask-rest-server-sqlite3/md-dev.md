@@ -187,3 +187,23 @@ $ curl -s -X GET -H 'Content-Type: application/json' http://0.0.0.0:3000/MyBookm
   "message": "Traceback (most recent call last):\n  File \"/home/aine/.local/lib/python3.8/site-packages/peewee.py\", line 6860, in get\n    return clone.execute(database)[0]\n  File \"/home/aine/.local/lib/python3.8/site-packages/peewee.py\", line 4258, in __getitem__\n    return self.row_cache[item]\nIndexError: list index out of range\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/aine/script-api/python-flask-rest-server-sqlite3/app.py\", line 26, in get_my_bookmark\n    my_bookmark = MyBookmark.get(MyBookmark.id == id)\n  File \"/home/aine/.local/lib/python3.8/site-packages/peewee.py\", line 6430, in get\n    return sq.get()\n  File \"/home/aine/.local/lib/python3.8/site-packages/peewee.py\", line 6863, in get\n    raise self.model.DoesNotExist('%s instance matching query does '\nMyBookmarkDoesNotExist: <Model: MyBookmark> instance matching query does not exist:\nSQL: SELECT \"t1\".\"id\", \"t1\".\"url\", \"t1\".\"title\" FROM \"mybookmark\" AS \"t1\" WHERE (\"t1\".\"id\" = ?) LIMIT ? OFFSET ?\nParams: [3328548806, 1, 0]\n"
 }
 ```
+
+
+WEBからアクセス
+
+WEBサーバ起動
+
+```
+$ cd $HOME/script-api
+
+$ python3 -m http.server 8080 --directory .
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+127.0.0.1 - - [22/Nov/2020 14:04:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Nov/2020 14:04:09] code 404, message File not found
+127.0.0.1 - - [22/Nov/2020 14:04:09] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Nov/2020 14:04:21] "GET /main.html HTTP/1.1" 200 -
+
+$ firefox http://0.0.0.0:8080/main.html
+
+#開いたブラウザのコンソールで単一テストできる。window.open('')だとOriginがnullで正しくテストできない。
+```

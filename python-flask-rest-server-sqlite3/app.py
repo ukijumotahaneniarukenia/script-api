@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, make_response, request
+import flask
 import peewee
 import traceback
 import json
 import random
 
-db = peewee.SqliteDatabase("testdb")
+db = peewee.SqliteDatabase('testdb')
 
 class MyBookmark(peewee.Model):
     id = peewee.IntegerField()
@@ -16,7 +17,8 @@ class MyBookmark(peewee.Model):
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False #日本語デコード
-app.config["JSON_SORT_KEYS"] = False #デフォルトソートのまま
+app.config['JSON_SORT_KEYS'] = False #デフォルトソートのまま
+# app.run(debug=True)
 
 @app.route('/MyBookmark/get/<int:id>', methods=['GET'])
 def get_my_bookmark(id):
@@ -25,24 +27,27 @@ def get_my_bookmark(id):
 
     my_bookmark = MyBookmark.get(MyBookmark.id == id)
 
-    result["status"] = 0
+    result['status'] = 0
 
     param = {}
-    param["id"] = id
-    result["param"] = param
+    param['id'] = id
+    result['param'] = param
 
     data = {}
-    data["id"]=my_bookmark.id
-    data["url"]=my_bookmark.url
-    data["title"]=my_bookmark.title
-    result["result"] = data
+    data['id']=my_bookmark.id
+    data['url']=my_bookmark.url
+    data['title']=my_bookmark.title
+    result['result'] = data
 
   except Exception:
 
-    result["status"] = 1
-    result["message"] = traceback.format_exc()
+    result['status'] = 1
+    result['message'] = traceback.format_exc()
 
-  return make_response(jsonify(result))
+  response = make_response(jsonify(result))
+  response.headers['Access-Control-Allow-Origin'] = '*'
+  response.headers['Content-type'] = 'application/json; charset=utf-8'
+  return response
 
 @app.route('/MyBookmark/create', methods=['POST'])
 def create_my_bookmark():
@@ -53,31 +58,54 @@ def create_my_bookmark():
   request_data = json.loads(json_data)
 
   target_id = random.sample(range(10000000000), 1)[0]
-  target_url = request_data["url"]
-  target_title = request_data["title"]
+  target_url = request_data['url']
+  target_title = request_data['title']
 
   try:
-
-    MyBookmark.insert(id=target_id,url=target_url,title=target_title).execute()
-
-    result["status"] = 0
-
-    data = {}
-    data["id"]=target_id
-    data["url"]=target_url
-    data["title"]=target_title
-    result["result"] = data
-
+    target_item = MyBookmark.get(
+      MyBookmark.id == target_id
+    )
+    result['status'] = 1
+    param = {}
+    param['id'] = target_id
+    result['param'] = param
+    result['message'] = 'already exists target item'
   except Exception:
+    target_item = None
 
-    result["status"] = 1
-    result["message"] = traceback.format_exc()
+  if target_item is None:
+    try:
 
-  return make_response(jsonify(result))
+      MyBookmark.insert(id=target_id,url=target_url,title=target_title).execute()
 
-@app.route('/MyBookmark/update/<int:id>', methods=['PATCH'])
+      result['status'] = 0
+
+      data = {}
+      data['id']=target_id
+      data['url']=target_url
+      data['title']=target_title
+      result['result'] = data
+
+    except Exception:
+
+      result['status'] = 1
+      result['message'] = traceback.format_exc()
+
+  response = make_response(jsonify(result))
+  response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response.headers['Content-type'] = 'application/json; charset=utf-8'
+  return response
+
+#ウェブからのパッチリクエスト対応がうまくいかん
+#フレームワークごとにリクエストメソッドの使い勝手ないしは意味の通り具合とうまく折り合いをつけるのがよさそうだ
+
+#https://stackoverflow.com/questions/53611800/how-handle-patch-method-in-flask-route-as-api
+# @app.route('/MyBookmark/update/<int:id>', methods=['PATCH','OPTIONS'])
+@app.route('/MyBookmark/update/<int:id>', methods=['POST'])
 def update_my_bookmark(id):
+
   result = {}
+
   json_data = request.get_data()
 
   request_data = json.loads(json_data)
@@ -86,38 +114,34 @@ def update_my_bookmark(id):
     target_item = MyBookmark.get(
       MyBookmark.id == id
     )
+    target_item.url = request_data['url']
+    target_item.title = request_data['title']
+
+    target_item.save()
+
+    result['status'] = 0
+    result['message'] = 'update target item'
+
+    param = {}
+    param['id'] = id
+    result['param'] = param
+
+    data = {}
+    data['id']=id
+    data['url']=target_item.url
+    data['title']=target_item.title
+    result['result'] = data
   except Exception:
-    target_item = None
-    result["status"] = 0
-    result["message"] = 'no data'
+    result['status'] = 1
+    result['message'] = traceback.format_exc()
 
-  if not target_item is None:
+  response = make_response(jsonify(result))
+  response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response.headers['Content-type'] = 'application/json; charset=utf-8'
+  return response
 
-    try:
-      target_item.url = request_data["url"]
-      target_item.title = request_data["title"]
-
-      target_item.save()
-
-      result["status"] = 0
-
-      param = {}
-      param["id"] = id
-      result["param"] = param
-
-      data = {}
-      data["id"]=id
-      data["url"]=target_item.url
-      data["title"]=target_item.title
-      result["result"] = data
-
-    except Exception:
-      result["status"] = 1
-      result["message"] = traceback.format_exc()
-
-  return make_response(jsonify(result))
-
-@app.route('/MyBookmark/delete/<int:id>', methods=['DELETE'])
+#https://stackoverflow.com/questions/22181384/javascript-no-access-control-allow-origin-header-is-present-on-the-requested
+@app.route('/MyBookmark/delete/<int:id>', methods=['DELETE','OPTIONS'])
 def delete_my_bookmark(id):
   result = {}
   try:
@@ -126,31 +150,27 @@ def delete_my_bookmark(id):
     )
   except Exception:
     target_item = None
-    result["status"] = 1
-
     param = {}
-    param["id"] = id
-    result["param"] = param
+    param['id'] = id
+    result['status'] = 0
+    result['param'] = param
+    result['message'] = 'delete target item'
 
   if not target_item is None:
 
     try:
 
-      response_cnt = MyBookmark.delete_instance(target_item)
+      MyBookmark.delete_instance(target_item)
 
     except Exception:
-      result["status"] = 1
-      result["message"] = traceback.format_exc()
+      result['status'] = 1
+      result['message'] = traceback.format_exc()
 
-    if not response_cnt == 0:
-
-      result["status"] = 0
-
-      param = {}
-      param["id"] = id
-      result["param"] = param
-
-  return make_response(jsonify(result))
+  response = make_response(jsonify(result))
+  response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response.headers['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
+  response.headers['Content-type'] = 'application/json; charset=utf-8'
+  return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
