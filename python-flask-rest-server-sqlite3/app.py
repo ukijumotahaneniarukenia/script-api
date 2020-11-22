@@ -96,48 +96,53 @@ def create_my_bookmark():
   response.headers['Content-type'] = 'application/json; charset=utf-8'
   return response
 
-#ウェブからのパッチリクエスト対応がうまくいかん
 #フレームワークごとにリクエストメソッドの使い勝手ないしは意味の通り具合とうまく折り合いをつけるのがよさそうだ
-
 #https://stackoverflow.com/questions/53611800/how-handle-patch-method-in-flask-route-as-api
-# @app.route('/MyBookmark/update/<int:id>', methods=['PATCH','OPTIONS'])
-@app.route('/MyBookmark/update/<int:id>', methods=['POST'])
+@app.route('/MyBookmark/update/<int:id>', methods=['PATCH','OPTIONS'])
 def update_my_bookmark(id):
 
   result = {}
+  if flask.request.method == 'OPTIONS':
+    # プリフライトリクエスト対応
+    response = make_response(jsonify(flask.request.method))
+    response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+    response.headers['Access-Control-Allow-Methods'] = 'PATCH, OPTIONS'
+    response.headers['Content-type'] = 'application/json; charset=utf-8'
+  else:
+    # プリフライトリクエスト後のリクエスト対応
+    json_data = request.get_data()
+    request_data = json.loads(json_data)
 
-  json_data = request.get_data()
+    try:
+      target_item = MyBookmark.get(
+        MyBookmark.id == id
+      )
+      target_item.url = request_data['url']
+      target_item.title = request_data['title']
 
-  request_data = json.loads(json_data)
+      target_item.save()
 
-  try:
-    target_item = MyBookmark.get(
-      MyBookmark.id == id
-    )
-    target_item.url = request_data['url']
-    target_item.title = request_data['title']
+      result['status'] = 0
+      result['message'] = 'update target item'
 
-    target_item.save()
+      param = {}
+      param['id'] = id
+      result['param'] = param
 
-    result['status'] = 0
-    result['message'] = 'update target item'
+      data = {}
+      data['id']=id
+      data['url']=target_item.url
+      data['title']=target_item.title
+      result['result'] = data
+    except Exception:
+      result['status'] = 1
+      result['message'] = traceback.format_exc()
 
-    param = {}
-    param['id'] = id
-    result['param'] = param
+    response = make_response(jsonify(result))
+    response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+    response.headers['Access-Control-Allow-Methods'] = 'PATCH, OPTIONS'
+    response.headers['Content-type'] = 'application/json; charset=utf-8'
 
-    data = {}
-    data['id']=id
-    data['url']=target_item.url
-    data['title']=target_item.title
-    result['result'] = data
-  except Exception:
-    result['status'] = 1
-    result['message'] = traceback.format_exc()
-
-  response = make_response(jsonify(result))
-  response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
-  response.headers['Content-type'] = 'application/json; charset=utf-8'
   return response
 
 #https://stackoverflow.com/questions/22181384/javascript-no-access-control-allow-origin-header-is-present-on-the-requested
