@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, request, Response
 import flask
 import peewee
 import traceback
@@ -18,16 +18,20 @@ class MyBookmark(peewee.Model):
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False #日本語デコード
 app.config['JSON_SORT_KEYS'] = False #デフォルトソートのまま
-# app.run(debug=True)
 
 @app.route('/MyBookmark/get/<int:id>', methods=['GET'])
 def get_my_bookmark(id):
   result = {}
+  response_header = {}
+  response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response_header['Content-type'] = 'application/json; charset=utf-8'
+
   try:
 
     my_bookmark = MyBookmark.get(MyBookmark.id == id)
 
     result['status'] = 0
+    result['message'] = 'select target item'
 
     param = {}
     param['id'] = id
@@ -38,20 +42,20 @@ def get_my_bookmark(id):
     data['url']=my_bookmark.url
     data['title']=my_bookmark.title
     result['result'] = data
+    return Response(headers=response_header, response=json.dumps(result), status=200)
 
   except Exception:
 
     result['status'] = 1
     result['message'] = traceback.format_exc()
-
-  response = make_response(jsonify(result))
-  response.headers['Access-Control-Allow-Origin'] = '*'
-  response.headers['Content-type'] = 'application/json; charset=utf-8'
-  return response
+    return Response(headers=response_header, response=json.dumps(result), status=404)
 
 @app.route('/MyBookmark/create', methods=['POST'])
 def create_my_bookmark():
   result = {}
+  response_header = {}
+  response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response_header['Content-type'] = 'application/json; charset=utf-8'
 
   json_data = request.get_data()
 
@@ -70,44 +74,44 @@ def create_my_bookmark():
     param['id'] = target_id
     result['param'] = param
     result['message'] = 'already exists target item'
+    # https://developer.mozilla.org/ja/docs/Web/HTTP/Status/409
+    return Response(headers=response_header, response=json.dumps(result), status=409)
   except Exception:
     target_item = None
 
   if target_item is None:
     try:
-
       MyBookmark.insert(id=target_id,url=target_url,title=target_title).execute()
-
       result['status'] = 0
-
+      result['message'] = 'create target item'
       data = {}
       data['id']=target_id
       data['url']=target_url
       data['title']=target_title
       result['result'] = data
-
+      # https://developer.mozilla.org/ja/docs/Web/HTTP/Status/201
+      return Response(headers=response_header, response=json.dumps(result), status=201)
     except Exception:
 
       result['status'] = 1
       result['message'] = traceback.format_exc()
+      # https://developer.mozilla.org/ja/docs/Web/HTTP/Status/500
+      return Response(headers=response_header, response=json.dumps(result), status=500)
 
-  response = make_response(jsonify(result))
-  response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
-  response.headers['Content-type'] = 'application/json; charset=utf-8'
-  return response
 
 #フレームワークごとにリクエストメソッドの使い勝手ないしは意味の通り具合とうまく折り合いをつけるのがよさそうだ
 #https://stackoverflow.com/questions/53611800/how-handle-patch-method-in-flask-route-as-api
 @app.route('/MyBookmark/update/<int:id>', methods=['PATCH','OPTIONS'])
 def update_my_bookmark(id):
-
   result = {}
+  response_header = {}
+  response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response_header['Access-Control-Allow-Methods'] = 'PATCH, OPTIONS'
+  response_header['Content-type'] = 'application/json; charset=utf-8'
+
   if flask.request.method == 'OPTIONS':
     # プリフライトリクエスト対応
-    response = make_response(jsonify(flask.request.method))
-    response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
-    response.headers['Access-Control-Allow-Methods'] = 'PATCH, OPTIONS'
-    response.headers['Content-type'] = 'application/json; charset=utf-8'
+    return Response(headers=response_header, response=json.dumps(result), status=200)
   else:
     # プリフライトリクエスト後のリクエスト対応
     json_data = request.get_data()
@@ -134,48 +138,53 @@ def update_my_bookmark(id):
       data['url']=target_item.url
       data['title']=target_item.title
       result['result'] = data
+      return Response(headers=response_header, response=json.dumps(result), status=200)
     except Exception:
       result['status'] = 1
       result['message'] = traceback.format_exc()
-
-    response = make_response(jsonify(result))
-    response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
-    response.headers['Access-Control-Allow-Methods'] = 'PATCH, OPTIONS'
-    response.headers['Content-type'] = 'application/json; charset=utf-8'
-
-  return response
+      return Response(headers=response_header, response=json.dumps(result), status=500)
 
 #https://stackoverflow.com/questions/22181384/javascript-no-access-control-allow-origin-header-is-present-on-the-requested
 @app.route('/MyBookmark/delete/<int:id>', methods=['DELETE','OPTIONS'])
 def delete_my_bookmark(id):
   result = {}
-  try:
-    target_item = MyBookmark.get(
-      MyBookmark.id == id
-    )
-  except Exception:
-    target_item = None
-    param = {}
-    param['id'] = id
-    result['status'] = 0
-    result['param'] = param
-    result['message'] = 'delete target item'
+  response_header = {}
+  response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response_header['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
+  response_header['Content-type'] = 'application/json; charset=utf-8'
 
-  if not target_item is None:
-
+  if flask.request.method == 'OPTIONS':
+    # プリフライトリクエスト対応
+    return Response(headers=response_header, response=json.dumps(result), status=200)
+  else:
+    # プリフライトリクエスト後のリクエスト対応
     try:
-
-      MyBookmark.delete_instance(target_item)
-
+      target_item = MyBookmark.get(
+        MyBookmark.id == id
+      )
     except Exception:
+      target_item = None
+      param = {}
+      param['id'] = id
       result['status'] = 1
-      result['message'] = traceback.format_exc()
+      result['param'] = param
+      result['message'] = 'not exists target item'
+      return Response(headers=response_header, response=json.dumps(result), status=404)
 
-  response = make_response(jsonify(result))
-  response.headers['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
-  response.headers['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
-  response.headers['Content-type'] = 'application/json; charset=utf-8'
-  return response
+    if not target_item is None:
+
+      try:
+
+        MyBookmark.delete_instance(target_item)
+        result['status'] = 0
+        result['message'] = 'delete target item'
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/Status/204
+        return Response(headers=response_header, response=json.dumps(result), status=204)
+
+      except Exception:
+        result['status'] = 1
+        result['message'] = traceback.format_exc()
+        return Response(headers=response_header, response=json.dumps(result), status=500)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
