@@ -17,12 +17,15 @@
       let targetUpload = document.getElementById("upload");
       let targetUploadFile = document.getElementById("targetUploadFile");
       let uploadFileData;
+      let uploadFileName;
 
 
       targetUpload.addEventListener("change", function (e) {
         e.preventDefault();
         uploadFileData = targetUploadFile.files[0];
+        uploadFileName = uploadFileData.name
         console.log(uploadFileData);
+        console.log(uploadFileName);
       });
 
       // PUTじゃないと嫌マン
@@ -30,7 +33,7 @@
         e.preventDefault();
         let request_headers = new Headers()
         request_headers.append("Content-Type","multipart/form-data")
-        request_headers.append("Content-Disposition","hogehoge.png")
+        request_headers.append("Content-Disposition",uploadFileName)
         console.log(request_headers.get("Content-Type"))
         // https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Content-Disposition
         console.log(request_headers.get("Content-Disposition"))
