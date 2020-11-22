@@ -5,15 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>テストページダヨーン</title>
   </head>
+
   <body>
+    <form id="upload">
+      <input type="file" id="targetUploadFile" />
+      <button>アップロード</button>
+    </form>
     <script>
-      fetch("http://0.0.0.0:3000/MyBookmark/get/1")
-        .then((res) => {
-          return res.json();
+      let targetUpload = document.getElementById("upload");
+      let targetUploadFile = document.getElementById("targetUploadFile");
+      let uploadFileData;
+
+      targetUpload.addEventListener("change", function (e) {
+        e.preventDefault();
+        uploadFileData = targetUploadFile.files[0];
+        console.log(uploadFileData);
+      });
+
+      // PUTじゃないと嫌マン
+      targetUpload.addEventListener("submit", function (e) {
+        e.preventDefault();
+        fetch("http://0.0.0.0:3000/MyBookmark/upload", {
+          method: "PUT",
+          mode: "cors",
+          headers: {
+            "Content-type": "multipart/form-data",
+          },
+          body: uploadFileData,
         })
-        .then((data) => {
-          console.log(data);
-        });
+          .then((data) => {
+            console.log("Success:", data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      });
     </script>
   </body>
 </html>

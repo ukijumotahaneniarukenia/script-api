@@ -1,9 +1,14 @@
-from flask import Flask, jsonify, make_response, request, Response
+from flask import Flask, request, Response
 import flask
 import peewee
 import traceback
 import json
 import random
+import os
+from datetime import datetime
+import werkzeug
+from werkzeug.datastructures import FileStorage
+import io
 
 db = peewee.SqliteDatabase('testdb')
 
@@ -18,6 +23,9 @@ class MyBookmark(peewee.Model):
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False #日本語デコード
 app.config['JSON_SORT_KEYS'] = False #デフォルトソートのまま
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 * 1024 #5GB
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR_PATH")
 
 @app.route('/MyBookmark/get/<int:id>', methods=['GET'])
 def get_my_bookmark(id):
@@ -208,5 +216,42 @@ def delete_my_bookmark(id):
         result['message'] = traceback.format_exc()
         return Response(headers=response_header, response=json.dumps(result), status=500)
 
+@app.route('/MyBookmark/upload', methods=['PUT','OPTIONS'])
+def upload_my_bookmark():
+
+  result = {}
+  response_header = {}
+  response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response_header['Access-Control-Allow-Methods'] = 'PUT, OPTIONS'
+  response_header['Content-type'] = 'application/json; charset=utf-8'
+
+  if flask.request.method == 'OPTIONS':
+    # プリフライトリクエスト対応
+    return Response(headers=response_header, response=json.dumps(result), status=200)
+  else:
+    # プリフライトリクエスト後のリクエスト対応
+    save_file_name = 'unko.png'
+    # if '' == file_name:
+    #   result['status'] = 1
+    #   result['message'] = 'filename must not empty'
+    #   return Response(headers=response_header, response=json.dumps(result), status=500)
+
+    # save_file_name = datetime.now().strftime("%Y%m%d_%H%M%S_") + werkzeug.utils.secure_filename(file_name)
+    file = FileStorage(stream=io.BytesIO(request.get_data()),filename=save_file_name,content_length=len(request.get_data()))
+    try:
+      file.save(os.path.join(UPLOAD_DIR, save_file_name))
+
+      result['status'] = 0
+      result['message'] = 'upload target item'
+      # https://developer.mozilla.org/ja/docs/Web/HTTP/Status/204
+      return Response(headers=response_header, response=json.dumps(result), status=200)
+    except Exception:
+      result['status'] = 1
+      result['message'] = traceback.format_exc()
+      print(traceback.format_exc())
+      return Response(headers=response_header, response=json.dumps(result), status=500)
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
+
