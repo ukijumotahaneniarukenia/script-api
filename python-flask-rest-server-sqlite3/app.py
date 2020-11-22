@@ -223,6 +223,7 @@ def upload_my_bookmark():
   response_header = {}
   response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
   response_header['Access-Control-Allow-Methods'] = 'PUT, OPTIONS'
+  response_header['Access-Control-Allow-Headers'] = 'Content-Disposition'
   response_header['Content-type'] = 'application/json; charset=utf-8'
 
   if flask.request.method == 'OPTIONS':
@@ -230,14 +231,20 @@ def upload_my_bookmark():
     return Response(headers=response_header, response=json.dumps(result), status=200)
   else:
     # プリフライトリクエスト後のリクエスト対応
-    save_file_name = 'unko.png'
-    # if '' == file_name:
-    #   result['status'] = 1
-    #   result['message'] = 'filename must not empty'
-    #   return Response(headers=response_header, response=json.dumps(result), status=500)
+    # print(request.get_data())
+    request_header = request.headers
+    target_file_name = request_header["Content-Disposition"]
+    target_content_length = request_header["Content-Length"]
 
-    # save_file_name = datetime.now().strftime("%Y%m%d_%H%M%S_") + werkzeug.utils.secure_filename(file_name)
-    file = FileStorage(stream=io.BytesIO(request.get_data()),filename=save_file_name,content_length=len(request.get_data()))
+    if '' == target_file_name:
+      result['status'] = 1
+      result['message'] = 'filename must not empty'
+      return Response(headers=response_header, response=json.dumps(result), status=500)
+
+    save_file_name = datetime.now().strftime("%Y-%m-%dT%H-%M-%S-") + werkzeug.utils.secure_filename(target_file_name)
+
+    file = FileStorage(stream=io.BytesIO(request.get_data()),content_length=target_content_length)
+
     try:
       file.save(os.path.join(UPLOAD_DIR, save_file_name))
 
@@ -248,8 +255,8 @@ def upload_my_bookmark():
     except Exception:
       result['status'] = 1
       result['message'] = traceback.format_exc()
-      print(traceback.format_exc())
       return Response(headers=response_header, response=json.dumps(result), status=500)
+
 
 # POSTならファイル名をハンドリングしやすそう
 # https://www.air-h.jp/articles/emopro/ajax%E3%81%A7%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E9%80%81%E4%BF%A1%E3%81%97%E3%81%9F%E3%81%84%EF%BC%88xhr-jquery-axios-fetch%EF%BC%89/
