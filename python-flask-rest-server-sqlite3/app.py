@@ -111,7 +111,18 @@ def update_my_bookmark(id):
 
   if flask.request.method == 'OPTIONS':
     # プリフライトリクエスト対応
-    return Response(headers=response_header, response=json.dumps(result), status=200)
+    target_item = MyBookmark.get(
+      MyBookmark.id == id
+    )
+    if not target_item is None:
+      return Response(headers=response_header, response=json.dumps(result), status=200)
+    else:
+      result['status'] = 1
+      result['message'] = 'not exists target item'
+      param = {}
+      param['id'] = id
+      result['param'] = param
+      return Response(headers=response_header, response=json.dumps(result), status=404)
   else:
     # プリフライトリクエスト後のリクエスト対応
     json_data = request.get_data()
@@ -155,7 +166,18 @@ def delete_my_bookmark(id):
 
   if flask.request.method == 'OPTIONS':
     # プリフライトリクエスト対応
-    return Response(headers=response_header, response=json.dumps(result), status=200)
+    target_item = MyBookmark.get(
+      MyBookmark.id == id
+    )
+    if not target_item is None:
+      return Response(headers=response_header, response=json.dumps(result), status=200)
+    else:
+      result['status'] = 1
+      result['message'] = 'not exists target item'
+      param = {}
+      param['id'] = id
+      result['param'] = param
+      return Response(headers=response_header, response=json.dumps(result), status=404)
   else:
     # プリフライトリクエスト後のリクエスト対応
     try:
