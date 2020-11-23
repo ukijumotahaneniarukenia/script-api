@@ -1,3 +1,9 @@
+事前準備
+```
+$ sudo gem install sinatra
+$ sudo gem install sinatra-cross_origin
+```
+
 データ準備
 ```
 drop table if exists employee;
