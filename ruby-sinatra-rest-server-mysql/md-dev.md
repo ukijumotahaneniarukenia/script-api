@@ -11,6 +11,17 @@ insert into employee(id,name,role)values(2,'うんこ','糞');
 select * from employee;
 ```
 
+WEBサーバプロセス起動
+```
+$ ruby -run -e httpd . -p 8000
+
+dockerコンテナ環境
+http://172.17.0.2:8000/main.html
+
+dockerコンテナ環境以外
+http://localhost:8000/main.html
+```
+
 全件取得
 
 ```
@@ -122,4 +133,14 @@ $ curl -s -X DELETE -H 'application/json' 'http://localhost:4567/users/delete/83
     "role": "恋人"
   }
 ]
+```
+
+アップロード
+
+```
+一旦これを
+$ curl -v -s -X PUT  -H 'Content-Type: multipart/form-data' 'http://localhost:4567/users/upload' -F 'picture=@picture-moon-png-10205.png'
+
+これで実装
+$ curl -s -X PUT  -H 'Content-Type: multipart/form-data' -H 'Content-Disposition: test.png' 'http://localhost:4567/users/upload' -F 'picture=@a.txt'
 ```
