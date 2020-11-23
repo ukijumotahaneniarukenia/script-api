@@ -58,7 +58,6 @@ patch '/users/update/:id' do
 end
 
 delete '/users/delete/:id' do
-  body = request.body.read
   my_data_list.map{|e|
     if e['id'] == params['id'].to_i
       my_data_list.delete(e)
