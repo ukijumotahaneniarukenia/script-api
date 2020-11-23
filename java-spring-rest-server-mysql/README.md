@@ -3,6 +3,15 @@
 
 - https://start.spring.io/
 
+コンテナ環境準備
+
+dockerホストのプロセスをdockerゲスト側から借用できるように「--pid=host」をつける
+
+```
+$ docker run --privileged --pid=host --shm-size=2gb --hostname=doc-ubuntu-18-04-vim -v /home/aine/script-env/ubuntu-18-04-vim/mnt:/home/aine/mnt -v /home/aine/Downloads-for-docker-container/ubuntu-18-04-vim:/home/aine/media -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /etc/localtime:/etc/localtime:ro -v /run/udev:/run/udev:ro -v /run/systemd:/run/systemd:ro -v /tmp/.X11-unix:/tmp/.X11-unix:ro -v /var/lib/dbus:/var/lib/dbus:ro -v /var/run/dbus:/var/run/dbus:ro -v /etc/machine-id:/etc/machine-id:ro -v /dev/dri:/dev/dri:ro  --name ubuntu-18-04-vim -itd ubuntu-18-04-vim
+a2f68810f9451fc449d9fd993321bf104a4ddc30948e094396a8e1fe0fb3f75e
+```
+
 
 データベースの準備
 
