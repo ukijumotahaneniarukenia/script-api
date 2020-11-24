@@ -38,6 +38,7 @@ $ pip3 install --user peewee
 
 ```
 $ mkdir -p upload
+
 $ export UPLOAD_DIR_PATH=$HOME/script-api/python-flask-rest-server-sqlite3/upload;python3 app.py
  * Serving Flask app "app" (lazy loading)
  * Environment: production
@@ -195,7 +196,7 @@ WEBからアクセス
 WEBサーバ起動
 
 ```
-$ cd $HOME/script-api
+$ cd $HOME/script-api/python-flask-rest-server-sqlite3
 
 $ python3 -m http.server 8080 --directory .
 Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...

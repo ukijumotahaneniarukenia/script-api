@@ -217,7 +217,7 @@ def delete_my_bookmark(id):
         return Response(headers=response_header, response=json.dumps(result), status=500)
 
 @app.route('/MyBookmark/upload', methods=['PUT','OPTIONS'])
-def upload_my_bookmark():
+def upload_my_bookmark_by_put_method():
 
   result = {}
   response_header = {}
@@ -231,7 +231,6 @@ def upload_my_bookmark():
     return Response(headers=response_header, response=json.dumps(result), status=200)
   else:
     # プリフライトリクエスト後のリクエスト対応
-    # print(request.get_data())
     request_header = request.headers
     target_file_name = request_header["Content-Disposition"]
     target_content_length = request_header["Content-Length"]
@@ -257,10 +256,36 @@ def upload_my_bookmark():
       result['message'] = traceback.format_exc()
       return Response(headers=response_header, response=json.dumps(result), status=500)
 
+@app.route('/MyBookmark/upload', methods=['POST'])
+def upload_my_bookmark_by_post_method():
 
-# POSTならファイル名をハンドリングしやすそう
-# https://www.air-h.jp/articles/emopro/ajax%E3%81%A7%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E9%80%81%E4%BF%A1%E3%81%97%E3%81%9F%E3%81%84%EF%BC%88xhr-jquery-axios-fetch%EF%BC%89/
+  result = {}
+  response_header = {}
+  response_header['Access-Control-Allow-Origin'] = 'http://0.0.0.0:8080'
+  response_header['Content-type'] = 'application/json; charset=utf-8'
+
+  file = request.files['image']
+  target_file_name = file.filename
+
+  if '' == target_file_name:
+    result['status'] = 1
+    result['message'] = 'filename must not empty'
+    return Response(headers=response_header, response=json.dumps(result), status=500)
+
+  save_file_name = datetime.now().strftime("%Y-%m-%dT%H-%M-%S-") + werkzeug.utils.secure_filename(target_file_name)
+
+  try:
+
+    file.save(os.path.join(UPLOAD_DIR, save_file_name))
+
+    result['status'] = 0
+    result['message'] = 'upload target item'
+    # https://developer.mozilla.org/ja/docs/Web/HTTP/Status/204
+    return Response(headers=response_header, response=json.dumps(result), status=200)
+  except Exception:
+    result['status'] = 1
+    result['message'] = traceback.format_exc()
+    return Response(headers=response_header, response=json.dumps(result), status=500)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
-

@@ -7,16 +7,19 @@
   </head>
 
   <body>
+    <form action="http://localhost:4567/users/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="image">
+      <input type="submit" value="POSTメソッドでアップロード">
+    </form>
     <form id="upload">
       <input type="file" id="targetUploadFile" />
-      <button>アップロード</button>
+      <button>PUTメソッドでアップロード</button>
     </form>
     <script>
       let targetUpload = document.getElementById("upload");
       let targetUploadFile = document.getElementById("targetUploadFile");
       let uploadFileData;
       let uploadFileName;
-
 
       targetUpload.addEventListener("change", function (e) {
         e.preventDefault();
@@ -41,6 +44,9 @@
           headers:request_headers,
           body: uploadFileData,
         })
+        .then((response) => {
+            return response.json();
+          })
           .then((data) => {
             console.log("Success:", data);
           })

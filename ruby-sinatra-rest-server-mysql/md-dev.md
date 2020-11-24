@@ -22,7 +22,9 @@ WEBサーバプロセス起動
 $ ruby -run -e httpd . -p 8000
 
 dockerコンテナ環境
-http://172.17.0.2:8000/main.html
+$ sudo apt install -y firefox
+
+http://localhost:8000/main.html
 
 dockerコンテナ環境以外
 http://localhost:8000/main.html
@@ -144,9 +146,7 @@ $ curl -s -X DELETE -H 'application/json' 'http://localhost:4567/users/delete/83
 アップロード
 
 ```
-一旦これを
-$ curl -v -s -X PUT  -H 'Content-Type: multipart/form-data' 'http://localhost:4567/users/upload' -F 'picture=@picture-moon-png-10205.png'
+$ curl -v -s -X POST  -H 'Content-Type: multipart/form-data' 'http://localhost:4567/users/upload' -F 'image=@picture-moon-png-10205.png'
 
-これで実装
-$ curl -s -X PUT  -H 'Content-Type: multipart/form-data' -H 'Content-Disposition: test.png' 'http://localhost:4567/users/upload' -F 'picture=@a.txt'
+$ curl -v -s -X PUT  -H 'Content-Type: multipart/form-data' 'http://localhost:4567/users/upload' -F 'image=@picture-moon-png-10205.png'
 ```

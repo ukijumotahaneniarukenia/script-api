@@ -4,21 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>テストページダヨーン</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
   </head>
 
   <body>
-    <form id="upload">
-      <input type="file" id="targetUploadFile" />
-      <button>アップロード</button>
+    <form action="http://0.0.0.0:3000/MyBookmark/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="image">
+      <input type="submit" value="POSTメソッドでアップロード">
+    </form>
+    <form id="uploadByPut">
+      <input type="file" id="targetUploadFileByPut" />
+      <button>PUTメソッドでアップロード</button>
     </form>
     <script>
 
-
-      let targetUpload = document.getElementById("upload");
-      let targetUploadFile = document.getElementById("targetUploadFile");
+      let targetUpload = document.getElementById("uploadByPut");
+      let targetUploadFile = document.getElementById("targetUploadFileByPut");
       let uploadFileData;
       let uploadFileName;
-
 
       targetUpload.addEventListener("change", function (e) {
         e.preventDefault();
@@ -43,6 +46,9 @@
           headers:request_headers,
           body: uploadFileData,
         })
+        .then((response) => {
+            return response.json();
+          })
           .then((data) => {
             console.log("Success:", data);
           })
