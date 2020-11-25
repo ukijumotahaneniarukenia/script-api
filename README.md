@@ -16,4 +16,4 @@
 |java|Light|https://doc.networknt.com/|
 |php|API Platform|https://demo-client.api-platform.com/|
 |ruby|Ruby Grape|http://www.ruby-grape.org/|
-|ruby|rack|https://github.com/rack/rack|
+|javascript|fastly|https://www.fastify.io/docs/latest/HTTP2/|
