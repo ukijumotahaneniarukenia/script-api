@@ -7,13 +7,17 @@
 |python|FastAPI|https://fastapi.tiangolo.com/|
 |python|hug|https://hugapi.github.io/hug/|
 |python|hug|https://hugapi.github.io/hug/|
-|node|Sails|https://sailsjs.com/|
-|node|LoopBack|https://loopback.io/|
-|node|feathersjs|https://feathersjs.com/|
-|node|restify|http://restify.com/|
+|javascript|Sails|https://sailsjs.com/|
+|javascript|frourio|https://frourio.io/|
+|javascript|LoopBack|https://loopback.io/|
+|javascript|feathersjs|https://feathersjs.com/|
+|javascript|restify|http://restify.com/|
+|javascript|fastly|https://www.fastify.io/|
+|javascript|express|https://expressjs.com/ja/|
+|javascript|nestjs|https://nestjs.com/|
+|javascript|foxify|https://foxify.js.org/|
 |java|dropwizard|https://www.dropwizard.io/en/latest/|
 |java|micronaut|https://micronaut.io/|
 |java|Light|https://doc.networknt.com/|
 |php|API Platform|https://demo-client.api-platform.com/|
 |ruby|Ruby Grape|http://www.ruby-grape.org/|
-|javascript|fastly|https://www.fastify.io/docs/latest/HTTP2/|
